@@ -1,0 +1,316 @@
+import json
+from telebot import types
+import telebot
+import datetime
+import requests
+import telegram
+import logging
+bot_token = '5942330740:AAHI85jTd9HRQq7K7X_W86SEjhCmuUSi_BA'
+API = '62c5b28a0cdf40c419c56d1a204d5389'
+
+bot = telebot.TeleBot(token=bot_token)
+
+# капибара
+name = 'капибара'
+energy = 70
+satiety = 20
+happiness = 100
+
+
+def feed():
+    global satiety, energy
+    satiety += 10
+    energy += 5
+
+
+def play():
+    global satiety, happiness, energy
+    satiety -= 5
+    happiness += 10
+    energy -= 10
+
+
+def sleep():
+    global satiety, happiness, energy
+    satiety -= 5
+    happiness -= 5
+    energy = 70
+
+
+def check(message):
+    global satiety, happiness, energy
+    if satiety <= 0:
+        bot.send_message(message.chat.id, f"{name} умер от голода. Не забывайте кормить питомца!")
+    elif satiety >= 10:
+        bot.send_message(message.chat.id, f"{name} наелся и счастлив")
+
+    if happiness < 0:
+        bot.send_message(message.chat.id, f"{name} умер от тоски. С питомцем нужно чаще играть!")
+    elif happiness > 100:
+        bot.send_message(message.chat.id, f"{name} счастлив как никогда")
+
+    if energy < 50:
+        bot.send_message(message.chat.id, f"{name} умрет от истощения")
+    elif energy > 70:
+        bot.send_message(message.chat.id, f"{name} полон сил и энергии!")
+
+
+@bot.message_handler(commands=['start', 'back'])
+def button(message):
+    markup = types.ReplyKeyboardMarkup(row_width=3)
+    item_1 = types.KeyboardButton('/капибара')
+    item_2 = types.KeyboardButton('/погода')
+    item_3 = types.KeyboardButton('/шутки')
+    markup.add(item_1, item_2, item_3)
+    bot.send_message(message.chat.id, 'Это бот с мини-играми. Выбери игру, в которую хочешь играть!')
+    bot.send_message(message.chat.id,'Выберите нужную вам игру', reply_markup=markup)
+
+
+@bot.message_handler(commands=['info'])
+def information(message):
+    bot.send_message(message.chat.id, "Начальные характеристи твоего питомца: \nэнергия = 70 \nсытость = 10 \nсчастье "
+                                      "= 100\n-----------------------\nЕсли у питомца будет меньше 50 энергии, "
+                                      "то он умрет\nЕсли у питомца будет меньше 0 сытости, то он умрет\nЕсли у "
+                                      "питомца будет меньше 0 счастья, то он умрет\n-----------------------\nПоесть = "
+                                      "+5 к энергии\n                 + 10 к сытости\nПоиграть = -5 к сытости\n       "
+                                      "          +10 к счастью\n                 -10 к энергии\nПоспать = -5 к "
+                                      "сытости\n                 -5 к счастью\n                 +70 к "
+                                      "энергии\nПриятной игры!")
+
+
+@bot.message_handler(commands=['feed'])
+def feed_handler(message):
+    feed()
+    bot.send_message(message.chat.id, f"{name} вкусно покушал и теперь его голод сосстовляет {satiety}!")
+    check(message)
+
+
+@bot.message_handler(commands=['sleep'])
+def sleep_handler(message):
+    sleep()
+    bot.send_message(message.chat.id, f"{name} поспал и стал здоровее! Теперь его здоровье состовляет {energy}!")
+    check(message)
+
+
+@bot.message_handler(commands=['play'])
+def play_handler(message):
+    play()
+    bot.send_message(message.chat.id, f"{name} поиграл и теперь его счастье состовляет {happiness}!")
+    check(message)
+
+
+@bot.message_handler(commands=['hp'])
+def stat(message):
+    global energy, satiety, happiness
+    bot.send_message(message.chat.id, f'Характеристики питомцев на данный момент:\n --------------------\nЭнергия:{energy}\nСытость:{satiety}\nСчастье:{happiness}\n--------------------')
+
+
+@bot.message_handler(commands=['капибара'])
+def button(message):
+    markup = types.ReplyKeyboardMarkup(row_width=3)
+    item_1 = types.KeyboardButton('/feed')
+    item_2 = types.KeyboardButton('/play')
+    item_3 = types.KeyboardButton('/sleep')
+    item_4 = types.KeyboardButton('/hp')
+    item_5 = types.KeyboardButton('/info')
+    item_6 = types.KeyboardButton('/back')
+    markup.add(item_1, item_2, item_3, item_4, item_5, item_6)
+    bot.send_message(message.chat.id, 'Это игра "Создай своего питомца и ухаживай правильно за ним", что бы узнать о его начальных характеристика, и о границах нажми /info')
+    bot.send_message(message.chat.id,'Выберите нужную вам команду', reply_markup=markup)
+
+
+
+
+
+
+
+# шутки https://api.chucknorris.io/jokes/random
+@bot.message_handler(commands=['шутки'])
+def shutki(message):
+    markup = types.ReplyKeyboardMarkup(row_width=3)
+    item_1 = types.KeyboardButton('/просто_шутка')
+    item_2 = types.KeyboardButton('/карьера')
+    item_3 = types.KeyboardButton('/знаменитость')
+    item_4 = types.KeyboardButton('/разработчик')
+    item_5 = types.KeyboardButton('/животные')
+    item_6 = types.KeyboardButton('/мода')
+    item_7 = types.KeyboardButton('/еда')
+    item_8 = types.KeyboardButton('/деньги')
+    item_9 = types.KeyboardButton('/спорт')
+    item_10 = types.KeyboardButton('/музыка')
+    item_11 = types.KeyboardButton('/путешествия')
+    item_12 = types.KeyboardButton('/back')
+    markup.add(item_1, item_2, item_3, item_4, item_5, item_6, item_7, item_8, item_9, item_10, item_11, item_12)
+    bot.send_message(message.chat.id,'это бот с шутками')
+    bot.send_message(message.chat.id, 'Выбери шутки', reply_markup=markup)
+
+
+@bot.message_handler(commands=['просто_шутка'])
+def animal_shutka(message):
+    categor = 'https://api.chucknorris.io/jokes/random'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['животные'])
+def animal_shutka(message):
+    animal = 'animal'
+    categor = f'https://api.chucknorris.io/jokes/random?category={animal}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['знаменитость'])
+def celebtity_shutka(message):
+    x = 'celebrity'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['мода'])
+def fashion_shutka(message):
+    x = 'fashion'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['еда'])
+def food_shutka(message):
+    x = 'food'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['карьера'])
+def food_shutka(message):
+    x = 'career'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['деньги'])
+def money_shutka(message):
+    x = 'money'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['музыка'])
+def music_shutka(message):
+    x = 'music'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['спорт'])
+def sport_shutka(message):
+    x = 'sport'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['путешествия'])
+def travel_shutka(message):
+    x = 'travel'
+    categor = f'https://api.chucknorris.io/jokes/random?category={x}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+@bot.message_handler(commands=['разработчик'])
+def dev_shutka(message):
+    animal = 'dev'
+    categor = f'https://api.chucknorris.io/jokes/random?category={animal}'
+    response1 = requests.get(categor)
+    data2 = json.loads(response1.text)
+    val2 = data2['value']
+    bot.reply_to(message, val2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@bot.message_handler(commands=['погода'])
+def get_info_and_button(message):
+    markup = types.ReplyKeyboardMarkup(row_width=3)
+    item_1 = types.KeyboardButton('Воронеж')
+    item_2 = types.KeyboardButton('Москва')
+    item_3 = types.KeyboardButton('Санкт-Петербург')
+    item_4 = types.KeyboardButton('Крым')
+    item_5 = types.KeyboardButton('/back')
+    markup.add(item_1, item_2, item_3, item_4, item_5)
+    bot.send_message(message.chat.id, 'Это бот для того, что бы узнать погоду, напиши название своего города или выбери на кнопках')
+    bot.send_message(message.chat.id, 'Или Выбери нужную вам команду на кнопках', reply_markup=markup)
+
+
+@bot.message_handler(content_types=['text'])
+def get_wether(message):
+    city = message.text.strip().lower()
+    res = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API}&units=metric')
+    if res.status_code == 200:
+        data = json.loads(res.text)
+        temp = data["main"]["temp"]
+        feels = data["main"]["feels_like"]
+        bot.reply_to(message, f'Сейчас погода: {temp}° C\nОщущается как {feels}° C')
+        image = 'sunny.png'
+        if temp > 10.0:
+            image = 'sunny.png'
+        elif temp < 10.0 and temp > 0.0:
+            image = 'sun.png'
+        elif temp < 0.0:
+            image = 'cloudy.png'
+        file = open('./' + image, 'rb')
+        bot.send_photo(message.chat.id, file)
+    else:
+        bot.reply_to(message, 'Город указан не верно')
+
+
+bot.polling(none_stop=True)
