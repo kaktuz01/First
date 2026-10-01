@@ -5,7 +5,7 @@ import datetime
 import requests
 import telegram
 import logging
-bot_token = '5942330740:AAHI85jTd9HRQq7K7X_W86SEjhCmuUSi_BA'
+bot_token = ''
 API = '62c5b28a0cdf40c419c56d1a204d5389'
 
 bot = telebot.TeleBot(token=bot_token)
